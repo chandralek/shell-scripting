@@ -1,0 +1,28 @@
+Syntax:
+
+[APP-NAME] [INFO|ERROR|WARNING] (TIME-STAMP | dim) Message 
+
+Example:
+
+[catalogue]
+
+RED, GREEN , YELLOW, BLUE, MAGENTA , CYAN 
+
+RED     - ERR
+GREEN   - OK
+YELLOW  - WAR 
+
+BLUE      - MONGODB, MYSQLDB, RABBITMQ, REDIS
+MAGENTA   - WEB
+CYAN      - CATALOGUE, CART, PAYMENT, SHIPPING, DISPATCH, USER
+
+#echo -e "\e[COL-CODEmMessage"
+
+# Colors are two types 
+## Color                ForegroundColor             BackgroundColor 
+# Red                         31                          41
+# Green                       32                          42
+# Yello                       33                          43
+# Blue                        34                          44
+# Magenta                     35                          45
+# Cyan                        36                          46
