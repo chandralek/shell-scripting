@@ -14,19 +14,18 @@ B="\e[0m\e[1m"
 
 LOG_FILE=/tmp/project.log 
 rm -f $LOG_FILE 
-#echo -e "${BB}[MONGO]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${BB}[RABBITMQ]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${BB}[MYSQL]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${BB}[REDIS]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#
-#echo -e "${MB}[NGINX]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#
-#echo -e "${CB}[CATALOGUE]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${CB}[CART]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${CB}[USER]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${CB}[SHIPPING]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${CB}[DISPATCH]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
-#echo -e "${CB}[PAYMENT]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
+
+## Check Git Cred Variables 
+
+if [ ! -n "$GIT_USER" ]; then 
+  echo -e "\n $RB GIT_USER Variable is missing, export GIT_USER and try again!!\n"
+  exit 1
+fi 
+
+if [ ! -n "$GIT_PASSWORD" ]; then 
+  echo -e "\n $RB GIT_PASSWORD Variable is missing, export GIT_PASSWORD and try again!!\n"
+  exit 1
+fi 
 
 LOGGER() {
   echo -e "************************END OF $2*******************************" &>>$LOG_FILE
@@ -75,7 +74,14 @@ CLONE()
 {
   mkdir -p /tmp/robo-shop
   cd /tmp/robo-shop
-  git clone https://gitlab.com/batch46/robo-shop/${1}.git
+  if [ -d ${1} ]; then
+    cd ${1}
+    git pull &>>$LOG_FILE
+    STAT $? "Pulling repo - $1"
+  else
+    git clone https://{GIT_USER}:{GIT_PASSWORD}gitlab.com/batch46/robo-shop/${1}.git &>>$LOG_FILE
+    STAT $? "Cloning repo - $1"
+  fi
 }
 
 ## Main Program 
