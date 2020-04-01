@@ -29,7 +29,7 @@ rm -f $LOG_FILE
 #echo -e "${CB}[PAYMENT]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
 
 LOGGER() {
-
+  echo -e "************************END OF $2*******************************"
   case $1 in 
     INFO) 
       STAT_COLOR=${B}
@@ -69,6 +69,13 @@ STAT() {
       LOGGER FAIL "$2"
       ;;
   esac
+}
+
+CLONE()
+{
+  mkdir -p /tmp/robo-shop
+  cd /tmp/robo-shop
+  git clone https://gitlab.com/batch46/robo-shop/{1}.git
 }
 
 ## Main Program 
@@ -141,7 +148,36 @@ systemctl enable mysqld &>>$LOG_FILE
 systemctl start mysqld &>>$LOG_FILE
 STAT $? "Starting MYSQL Database"
 
+SERVICE_NAME=REDIS
+LOGGER INFO "Starting REDIS Setup"
+
+yum install epel-release yum-utils -y &>>$LOG_FILE 
+STAT $? "Installing EPEL & YUM UTILS Package"
+
+yum list installed | grep remi-release &>/dev/null
+case $? in 
+  0) 
+    STAT SKIP "Setting Up YUM Repos"
+    ;;
+  *) 
+    yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm -y &>>$LOG_FILE
+    STAT $? "Setting Up YUM Repos"
+    yum-config-manager --enable remi &>/dev/null 
+    ;;
+esac
+
+yum install redis -y &>>$LOG_FILE
+STAT $? "Installing Redis"
+
+systemctl enable redis &>>$LOG_FILE
+systemctl start redis &>>$LOG_FILE
+STAT $? "Starting REDIS Service"
+
+
 SERVICE_NAME=NGINX
-LOGGER INFO "Starting MYSQL Setup"
+LOGGER INFO "Starting Nginx Setup"
 
+yum install nginx -y &>>$LOG_FILE
+STAT $? "Installing Nginx"
 
+CLONE nginx-webapp 
