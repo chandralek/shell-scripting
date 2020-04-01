@@ -116,19 +116,32 @@ STAT $? "Start RabbitMq Server"
 
 
 SERVICE_NAME=MYSQL
-LOGGER INFO "Starting Mysql setup"
+LOGGER INFO "Starting MYSQL Setup"
 LOGGER INFO "Downloading MYSQL"
 yum remove mariadb-libs -y &>/dev/null
-wget https://downloads.mysql.com/archives/get/p/23/file/mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar&>>$LOG_FILE
-STAT $? "Downloaded MYSQL"
-tar -xf mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar &>/dev/null
-yum install mysql-community-client-5.7.28-1.el7.x86_64.rpm \
+yum list installed | grep mysql-community-server &> /dev/null
+case $? in
+0)
+  STAT SKIP "Downloading MYSQL"
+  ;;
+*)
+  wget https://downloads.mysql.com/archives/get/p/23/file/mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar&>>$LOG_FILE
+  STAT $? "Downloaded MYSQL"
+  tar -xf mysql-5.7.28-1.el7.x86_64.rpm-bundle.tar &>/dev/null
+  yum install mysql-community-client-5.7.28-1.el7.x86_64.rpm \
               mysql-community-common-5.7.28-1.el7.x86_64.rpm \
               mysql-community-libs-5.7.28-1.el7.x86_64.rpm \
               mysql-community-server-5.7.28-1.el7.x86_64.rpm -y &>>$LOG_FILE
-STAT $? "Installing MYSQL"
+  STAT $? "Installing MYSQL Database"
+  rm -rf mysql-5* *.rpm
+  ;;
+esac
+
 systemctl enable mysqld &>>$LOG_FILE
 systemctl start mysqld &>>$LOG_FILE
-STAT $? "Starting MYSQL"
+STAT $? "Starting MYSQL Database"
+
+SERVICE_NAME=NGINX
+LOGGER INFO "Starting MYSQL Setup"
 
 
