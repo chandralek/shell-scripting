@@ -1,7 +1,5 @@
 #!/bin/bash 
 
-## 
-
 RB="\e[0m\e[1;31m"
 GB="\e[0m\e[1;32m"
 YB="\e[0m\e[1;33m"
@@ -14,6 +12,7 @@ B="\e[0m\e[1m"
 
 LOG_FILE=/tmp/project.log 
 rm -f $LOG_FILE 
+CLONE_MAIN_DIR=/tmp/robo-shop
 
 ## Check Git Cred Variables 
 
@@ -72,8 +71,8 @@ STAT() {
 
 CLONE()
 {
-  mkdir -p /tmp/robo-shop
-  cd /tmp/robo-shop
+  mkdir -p $CLONE_MAIN_DIR
+  cd $CLONE_MAIN_DIR
   if [ -d ${1} ]; then
     cd ${1}
     git pull &>>$LOG_FILE
@@ -186,4 +185,17 @@ LOGGER INFO "Starting Nginx Setup"
 yum install nginx -y &>>$LOG_FILE
 STAT $? "Installing Nginx"
 
-CLONE nginx-webapp 
+REPO_DIR=nginx-webapp
+CLONE $REPO_DIR 
+
+
+cp $CLONE_MAIN_DIR/$REPO_DIR/nginx-localhost.conf /etc/nginx/nginx.conf &>>$LOG_FILE
+STAT $? "Updating Nginx Configuration"
+
+rm -rf /usr/share/nginx/html &>>$LOG_FILE
+cp -r $CLONE_MAIN_DIR/$REPO_DIR/static /usr/share/nginx/html &>>$LOG_FILE
+STAT $? "Copying Nginx Static Content"
+
+systemctl enable nginx &>>$LOG_FILE
+systemctl start nginx &>>$LOG_FILE
+STAT $? "Starting NGINX Service"
