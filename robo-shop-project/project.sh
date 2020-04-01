@@ -29,7 +29,7 @@ rm -f $LOG_FILE
 #echo -e "${CB}[PAYMENT]${B}[INFO] ${D}$(date +%F' '%T) ${B}MongoDB Install${N}"
 
 LOGGER() {
-  echo -e "************************END OF $2*******************************"
+  echo -e "************************END OF $2*******************************" &>>$LOG_FILE
   case $1 in 
     INFO) 
       STAT_COLOR=${B}
@@ -75,7 +75,7 @@ CLONE()
 {
   mkdir -p /tmp/robo-shop
   cd /tmp/robo-shop
-  git clone https://gitlab.com/batch46/robo-shop/{1}.git
+  git clone https://gitlab.com/batch46/robo-shop/{$1}.git
 }
 
 ## Main Program 
