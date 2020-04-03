@@ -230,7 +230,7 @@ for app in CATALOGUE CART USER; do
   INSTALL_NODEJS
   USERNAME=$(echo $SERVICE_NAME|tr [A-Z] [a-z])
   APPNAME=$USERNAME
-  id $USERNAME &/dev/null
+  id $USERNAME &>/dev/null
   if [ $? -eq 0 ];then
     STAT SKIP "Creating application User"
   else
