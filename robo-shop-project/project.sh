@@ -89,7 +89,7 @@ CLONE()
 
 INSTALL_NODEJS()
 {
-  which node
+  which node &>>$LOG_FILE
   if [ $? -eq 0 ];then
     STAT SKIP "Installing Node Js"
     return
@@ -101,9 +101,9 @@ INSTALL_NODEJS()
 SERVICE_SETUP()
 {
   cp /home/$USERNAME/$APPNAME/$APPNAME.service /etc/systemd/system/$APPNAME.service
-  systemctl daemon-reload
-  systemctl enable $APPNAME
-  systemctl start $APPNAME
+  systemctl daemon-reload >>$LOG_FILE
+  systemctl enable $APPNAME >>$LOG_FILE
+  systemctl start $APPNAME >>$LOG_FILE
 }
 
 
@@ -244,5 +244,32 @@ for app in CATALOGUE CART USER; do
   STAT $? "Installing NodeJs dependencies"
   chown $USERNAME:$USERNAME /home/$USERNAME -R
   mkdir -p /var/log/robo-shop/
+  SERVICE_SETUP
+done
+
+for app in DISPATCH SHIPPING; do
+  SERVICE_NAME=$app
+  LOGGER INFO "Starting $app Setup"
+  if [ "$app" == "SHIPPING" ]; then
+    yum install java -y &>>$LOG_FILE
+    STAT $? "Installing Java"
+  fi
+  USERNAME=$(echo $SERVICE_NAME|tr [A-Z] [a-z])
+  APPNAME=$USERNAME
+  id $USERNAME &>/dev/null
+  if [ $? -eq 0 ];then
+    STAT SKIP "Creating application User"
+  else
+    useradd $USERNAME
+    STAT $? "Creating application User"
+  fi
+  cd /home/$USERNAME
+  CLONE $USERNAME "/home/$USERNAME"
+  cd /home/$USERNAME/$APPNAME
+  chown $USERNAME:$USERNAME /home/$USERNAME -R
+  if [ "$app" == "DISPATCH" ]; then
+    chmod ugo+x /home/dispatch/dispatch/dispatch &>>$LOG_FILE
+    STAT $? "Give executable permissions"
+  fi
   SERVICE_SETUP
 done
