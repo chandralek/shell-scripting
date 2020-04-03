@@ -100,10 +100,10 @@ INSTALL_NODEJS()
 
 SERVICE_SETUP()
 {
-  cp /home/$USERNAME/$APPNAME/$APPNAME.service /etc/systemd/system/$APPNAME.service
-  systemctl daemon-reload >>$LOG_FILE
-  systemctl enable $APPNAME >>$LOG_FILE
-  systemctl start $APPNAME >>$LOG_FILE
+  cp /home/$USERNAME/$APPNAME/$APPNAME.service /etc/systemd/system/$APPNAME.service &>>$LOG_FILE
+  systemctl daemon-reload &>>$LOG_FILE
+  systemctl enable $APPNAME &>>$LOG_FILE
+  systemctl start $APPNAME &>>$LOG_FILE
 }
 
 
