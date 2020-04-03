@@ -71,7 +71,11 @@ STAT() {
 
 CLONE()
 {
-  mkdir -p $CLONE_MAIN_DIR
+  if [ -z "$2" ]; then
+    mkdir -p $CLONE_MAIN_DIR
+  else
+    local CLONE_MAIN_DIR=$2
+  fi
   cd $CLONE_MAIN_DIR
   if [ -d ${1} ]; then
     cd ${1}
@@ -82,6 +86,26 @@ CLONE()
     STAT $? "Cloning repo - $1"
   fi
 }
+
+INSTALL_NODEJS()
+{
+  which node
+  if [ $? -eq 0 ];then
+    STAT SKIP "Installing Node Js"
+    return
+  fi
+  curl -s https://raw.githubusercontent.com/linuxautomations/labautomation/master/tools/nodejs/install.sh | bash &>>LOG_FILE
+  STAT $? "Installing Node JS"
+}
+
+SERVICE_SETUP()
+{
+  cp /home/$USERNAME/$APPNAME/$APPNAME.service /etc/systemd/system/$APPNAME.service
+  systemctl daemon-reload
+  systemctl enable $APPNAME
+  systemctl start $APPNAME
+}
+
 
 ## Main Program 
 SERVICE_NAME=MONGODB
@@ -199,3 +223,28 @@ STAT $? "Copying Nginx Static Content"
 systemctl enable nginx &>>$LOG_FILE
 systemctl start nginx &>>$LOG_FILE
 STAT $? "Starting NGINX Service"
+
+for app in CATALOGUE CART USER; do
+  SERVICE_NAME=$app
+  LOGGER INFO "Starting $app Setup"
+  INSTALL_NODEJS
+  USERNAME=$(echo $SERVICE_NAME|tr [A-Z] [a-z])
+  APPNAME=$USERNAME
+  id USERNAME &/dev/null
+  if [ $? -eq 0 ];then
+    STAT SKIP "Creating application User"
+  else
+    useradd $USERNAME
+    STAT $? "Creating application User"
+  fi
+  cd /home/$USERNAME
+  CLONE $USERNAME "/home/$USERNAME"
+  cd /home/$USERNAME/$APPNAME
+  npm install &>>$LOG_FILE
+  STAT $? "Installing NodeJs dependencies"
+  chown $USERNAME:$USERNAME /home/$USERNAME -R
+  mkdir -p /var/log/robo-shop/
+  SERVICE_SETUP
+done
+
+for app in CATALOGUE CART USER; do
