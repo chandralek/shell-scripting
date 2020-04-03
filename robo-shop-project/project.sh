@@ -246,5 +246,3 @@ for app in CATALOGUE CART USER; do
   mkdir -p /var/log/robo-shop/
   SERVICE_SETUP
 done
-
-for app in CATALOGUE CART USER; do
